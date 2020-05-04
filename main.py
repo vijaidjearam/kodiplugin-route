@@ -5,7 +5,8 @@ from xbmcplugin import addDirectoryItem, endOfDirectory, setResolvedUrl
 import urllib2,urllib,re,requests
 import resolveurl as urlresolver
 
-def getdatacontent(url,reg):
+
+def getdatacontent_dict(url,reg):
     proxy_handler = urllib2.ProxyHandler({})
     opener = urllib2.build_opener(proxy_handler)
     req = urllib2.Request(url)
@@ -15,7 +16,7 @@ def getdatacontent(url,reg):
     r = re.compile(reg)
     data = [m.groupdict() for m in r.finditer(html)]
     return data
-def getnavcontent(url,reg):
+def getdatacontent(url,reg):
     proxy_handler = urllib2.ProxyHandler({})
     opener = urllib2.build_opener(proxy_handler)
     req = urllib2.Request(url)
@@ -39,6 +40,15 @@ def index():
     get_stream_url_regex = urllib.quote_plus(get_stream_url_regex)
     get_nav_data_regex = urllib.quote_plus(get_nav_data_regex)
     addDirectoryItem(plugin.handle, plugin.url_for(getsitecontent,url,get_site_content_regex,get_nav_data_regex,get_stream_url_regex), ListItem("movierulz"), True)
+    url = "https://www.tubetamil.com"
+    get_site_content_regex='<div class="thumb">\s+<a\shref=\"(?P<pageurl>.*?)\"\s+title=\"(?P<title>.*?)\">\s+<img\ssrc=\"(?P<poster>.*?)\"'
+    get_nav_data_regex = '<li class="next"><a\shref=\"(?P<navlink>.*?)\"'
+    get_stream_url_regex = '<iframe\swidth=\"(.*?)\"\s+height=\"(.*?)\"\s+src=\"(?P<streamurl>.*?)\?'
+    get_site_content_regex = urllib.quote_plus(get_site_content_regex)
+    get_stream_url_regex = urllib.quote_plus(get_stream_url_regex)
+    get_nav_data_regex = urllib.quote_plus(get_nav_data_regex)
+    addDirectoryItem(plugin.handle, plugin.url_for(getsitecontent,url,get_site_content_regex,get_nav_data_regex,get_stream_url_regex), ListItem("Tubetamil"), True)
+
     endOfDirectory(plugin.handle)
 
 
@@ -46,8 +56,8 @@ def index():
 def getsitecontent(url,get_site_content_regex,get_nav_data_regex,get_stream_url_regex):
     get_site_content_regex = urllib.unquote_plus(get_site_content_regex)
     get_nav_data_regex = urllib.unquote_plus(get_nav_data_regex)
-    data = getdatacontent(url,get_site_content_regex)
-    nav = getdatacontent(url,get_nav_data_regex)
+    data = getdatacontent_dict(url,get_site_content_regex)
+    nav = getdatacontent_dict(url,get_nav_data_regex)
     for item in data:
         addDirectoryItem(plugin.handle,plugin.url_for(liststreamurl,item['pageurl'],get_stream_url_regex), ListItem(item['title'],item['poster'],item['poster']),True)
     if nav:
@@ -62,22 +72,32 @@ def getsitecontent(url,get_site_content_regex,get_nav_data_regex,get_stream_url_
 @plugin.route('/liststreamurl/<path:url>/<get_stream_url_regex>')
 def liststreamurl(url,get_stream_url_regex):
     get_stream_url_regex = urllib.unquote_plus(get_stream_url_regex)
-    data = getdatacontent(url,get_stream_url_regex)
+    data = getdatacontent_dict(url,get_stream_url_regex)
     for item in data:
+        if 'streamtitle' in item.keys():
+            pass
+        else:
+            item.update({'streamtitle':'click to play'})
         addDirectoryItem(plugin.handle,plugin.url_for(resolvelink,item['streamurl']), ListItem(item['streamtitle']),True)
     endOfDirectory(plugin.handle)
 
 @plugin.route('/resolvelink/<path:url>')
 def resolvelink(url):
-    try:
-        movieurl = urlresolver.HostedMediaFile(url)
-        movieurl = movieurl.resolve()
-        play_item = ListItem('click to play the link')
-        play_item.setInfo( type="Video", infoLabels=None)
-        play_item.setProperty('IsPlayable', 'true')
-        addDirectoryItem(plugin.handle,url=movieurl,listitem=play_item,isFolder=False)
-    except:
-        Dialog().ok('XBMC', 'Unable to locate video')
+    play_item = ListItem('click to play the link')
+    play_item.setInfo( type="Video", infoLabels=None)
+    play_item.setProperty('IsPlayable', 'true')
+    if 'youtube' in url:
+        url = url.split('/')
+        youtube_video_id = url[-1]
+        url = 'plugin://plugin.video.youtube/play/?video_id='+youtube_video_id
+        addDirectoryItem(plugin.handle,url=url,listitem=play_item,isFolder=False)
+    else:
+        try:
+            movieurl = urlresolver.HostedMediaFile(url)
+            movieurl = movieurl.resolve()
+            addDirectoryItem(plugin.handle,url=movieurl,listitem=play_item,isFolder=False)
+        except:
+            Dialog().ok('XBMC', 'Unable to locate video')
     endOfDirectory(plugin.handle)
 
 
