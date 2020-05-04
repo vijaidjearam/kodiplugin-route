@@ -74,15 +74,17 @@ def liststreamurl(url,get_stream_url_regex):
     get_stream_url_regex = urllib.unquote_plus(get_stream_url_regex)
     data = getdatacontent_dict(url,get_stream_url_regex)
     for item in data:
+        streamurl = urllib.quote_plus(item['streamurl'])
         if 'streamtitle' in item.keys():
             pass
         else:
             item.update({'streamtitle':'click to play'})
-        addDirectoryItem(plugin.handle,plugin.url_for(resolvelink,item['streamurl']), ListItem(item['streamtitle']),True)
+        addDirectoryItem(plugin.handle,plugin.url_for(resolvelink,streamurl), ListItem(item['streamtitle']),True)
     endOfDirectory(plugin.handle)
 
-@plugin.route('/resolvelink/<path:url>')
+@plugin.route('/resolvelink/<url>')
 def resolvelink(url):
+    url = urllib.unquote_plus(url)
     play_item = ListItem('click to play the link')
     play_item.setInfo( type="Video", infoLabels=None)
     play_item.setProperty('IsPlayable', 'true')
@@ -91,6 +93,20 @@ def resolvelink(url):
         youtube_video_id = url[-1]
         url = 'plugin://plugin.video.youtube/play/?video_id='+youtube_video_id
         addDirectoryItem(plugin.handle,url=url,listitem=play_item,isFolder=False)
+    elif 'etcscrs' in url:
+        data = getdatacontent_dict(url,'<iframe\swidth=\"(.*?)\"\sheight=\"(.*?)\"\s+src=\"(?P<mixdroplink>.*?)\"')
+        xbmc.log('--------------------------------Entering etcscrs ------------------------------')
+        xbmc.log(url)
+        xbmc.log(str(data))
+        for item in data:
+            if item['mixdroplink']:
+                if 'mixdrop' in item['mixdroplink']:
+                    url = 'https:'+item['mixdroplink']
+                    xbmc.log(url)
+                    movieurl = urlresolver.HostedMediaFile(url)
+                    movieurl = movieurl.resolve()
+                    addDirectoryItem(plugin.handle,url=movieurl,listitem=play_item,isFolder=False)
+
     else:
         try:
             movieurl = urlresolver.HostedMediaFile(url)
