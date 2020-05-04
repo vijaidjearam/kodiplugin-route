@@ -95,17 +95,16 @@ def resolvelink(url):
         addDirectoryItem(plugin.handle,url=url,listitem=play_item,isFolder=False)
     elif 'etcscrs' in url:
         data = getdatacontent_dict(url,'<iframe\swidth=\"(.*?)\"\sheight=\"(.*?)\"\s+src=\"(?P<mixdroplink>.*?)\"')
-        xbmc.log('--------------------------------Entering etcscrs ------------------------------')
-        xbmc.log(url)
-        xbmc.log(str(data))
         for item in data:
             if item['mixdroplink']:
                 if 'mixdrop' in item['mixdroplink']:
                     url = 'https:'+item['mixdroplink']
-                    xbmc.log(url)
-                    movieurl = urlresolver.HostedMediaFile(url)
-                    movieurl = movieurl.resolve()
-                    addDirectoryItem(plugin.handle,url=movieurl,listitem=play_item,isFolder=False)
+                    try:
+                        movieurl = urlresolver.HostedMediaFile(url)
+                        movieurl = movieurl.resolve()
+                        addDirectoryItem(plugin.handle,url=movieurl,listitem=play_item,isFolder=False)
+                    except:
+                        Dialog().ok('XBMC', 'Unable to locate video')
 
     else:
         try:
