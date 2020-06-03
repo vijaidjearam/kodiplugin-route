@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon id="plugin.video.test"
 version="1.0.0"
-name="vijai-1"
+name="vijai"
 provider-name="vijai">
 <requires>
   <import addon="xbmc.python" version="2.25.0"/>
@@ -14,15 +14,11 @@ provider-name="vijai">
   <provides>video</provides>
 </extension>
 <extension point="xbmc.addon.metadata">
-  <summary lang="en">Example Kodi Video Plugin</summary>
-  <description lang="en_GB">An example video plugin for Kodi mediacenter.</description>
-  <disclaimer lang="en_GB">Free sample videos are provided by www.vidsplay.com.</disclaimer>
+  <summary lang="en">Video Plugin</summary>
+  <description lang="en_GB">video plugin for Kodi mediacenter.</description>
+  <disclaimer lang="en_GB">The plugin only provides movies or series thats available in the internet.</disclaimer>
   <assets>
     <icon>icon.png</icon>
-    <fanart>fanart.jpg</fanart>
-    <screenshot>resources\screenshot-01.jpg</screenshot>
-    <screenshot>resources\screenshot-02.jpg</screenshot>
-    <screenshot>resources\screenshot-03.jpg</screenshot>    
   </assets>
   <news>Updated with latest artwork metadata</news>
 </extension>
